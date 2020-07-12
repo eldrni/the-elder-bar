@@ -5,7 +5,6 @@ TEB.version = "10.0.0"
 
 local LAM2 = LibAddonMenu2
 local LFDB = LIB_FOOD_DRINK_BUFF
-local LV = LibVampire
 local screenWidth = GuiRoot:GetWidth()
 local screenHeight = GuiRoot:GetHeight()
 local lockMessage = true
@@ -64,6 +63,7 @@ local gadgetsLocked = true
 local ap_SessionStart = os.time()
 local ap_SessionStartPoints = GetCurrencyAmount(CURT_ALLIANCE_POINTS, CURRENCY_LOCATION_CHARACTER)
 local scale = 100
+local barLayer = 0
 
 local pulseWhenCritical = false
 local clock_TwentyFourHourClock = true
@@ -201,6 +201,16 @@ local mundusStoneReference ={
     ["013"] = "Tower"
 }
 
+local equipSlotReference = {
+    [0] = "head",
+    [2] = "chest",
+    [3] = "shoulders",
+    [6] = "waist",
+    [8] = "legs",
+    [9] = "feet",
+    [16] = "hands"
+}
+
 local traitReference = {
     [18] = "Divines",
     [17] = "Exploration",
@@ -273,7 +283,7 @@ local iconReference = {
     ["TEBTopVampirismIcon"] = "Vampirism" 
 }
 
-gadgetReference = {
+local gadgetReference = {
 }
 
 local defaultGadgets = {"Level", "Gold", "Tel Var Stones", "Transmute Crystals", "Writ Vouchers", "Soul Gems", "Alliance Points", "Bag Space", "Mount Timer", "Experience", "Clock", "Sky Shards", "Durability", "Blacksmithing Research Timer", "Clothing Research Timer", "Woodworking Research Timer", "Jewelry Crafting Research Timer", "Bank Space", "Latency", "FPS", "Weapon Charge", "Location", "Thief's Tools", "Memory Usage", "Fast Travel Timer", "Kill Counter", "Enlightenment", "Unread Mail", "Event Tickets", "Food Buff Timer", "Mundus Stone", "Bounty Timer", "Vampirism" }
@@ -304,7 +314,6 @@ end
 function TEB:Initialize()
     TEBTooltip:SetHidden(true)
     
-    TEBTop:SetDrawLayer(DL_BACKGROUND)
     originalTargetUnitFrameTop = ZO_TargetUnitFramereticleover:GetTop()
     originalCompassTop = ZO_CompassFrame:GetTop()
     originalActionBarTop = ZO_ActionBar1:GetTop()
@@ -330,7 +339,7 @@ function TEB:Initialize()
         ["Clock"] = {TEBTopTimeIcon, TEBTopTime, "clock", "TEBTopTimeIcon", "", false},
         ["Clothing Research Timer"] = {TEBTopResearchClothingIcon, TEBTopResearchClothing, "clothing", "TEBTopResearchClothingIcon", "", false},
         ["Durability"] = {TEBTopDurabilityIcon, TEBTopDurability, "durability", "TEBTopDurabilityIcon", "", false},
-        ["Enlightenment"] = {TEBTopEnlightenmentIcon, TEBTopEnlightenment, "enlightened", "TEBTopEnlightenmentIcon", "", false},
+        ["Enlightenment"] = {TEBTopEnlightenmentIcon, TEBTopEnlightenment, "enlightenment", "TEBTopEnlightenmentIcon", "", false},
         ["Event Tickets"] = {TEBTopETIcon, TEBTopET, "eventtickets", "TEBTopETIcon", "", false},
         ["Experience"] = {TEBTopXPIcon, TEBTopXP, "experience", "TEBTopXPIcon", "", false},
         ["Fast Travel Timer"] = {TEBTopFTIcon, TEBTopFT, "ft", "TEBTopFTIcon", "", false},
@@ -490,7 +499,8 @@ function TEB:Initialize()
         },
         vampirism_Dynamic = true,
         font = "Univers57",
-        pulseWhenCritical = false
+        pulseWhenCritical = false,
+        barLayer = 0
     }
     
     TEB.CreateSettingsWindow()  
@@ -635,6 +645,7 @@ function TEB:Initialize()
     vampirism_StageColor = TEB.savedVariables.vampirism_StageColor
     font = TEB.savedVariables.font
     pulseWhenCritical = TEB.savedVariables.pulseWhenCritical
+    barLayer = TEB.savedVariables.barLayer
 
     TEB.SetFPSFixed()        
     TEB.SetLatencyFixed() 
@@ -644,6 +655,7 @@ function TEB:Initialize()
     TEBTop:ClearAnchors()
     TEBTop:SetAnchor(TOPLEFT, GuiRoot, TOPLEFT, 0, barY)
     
+    TEB.SetBarLayer()
     TEB.LockUnlockBar(barLocked)
     TEB.LockUnlockGadgets(gadgetsLocked)
 
@@ -686,6 +698,14 @@ function TEB.SetFPSFixed()
             ReloadUI("ingame")
         end
     end
+end
+
+------------------------------------------------------
+-- SetBarLayer
+------------------------------------------------------
+function TEB.SetBarLayer()
+    TEBTop:SetDrawLayer(barLayer)
+    TEBTooltip:SetDrawLayer(4)
 end
 ------------------------------------------------------
 -- HideBar
@@ -1731,36 +1751,43 @@ end
 function TEB:SetBarPosition()
     
 	ZO_CompassFrame:ClearAnchors()
-	ZO_TargetUnitFramereticleover:ClearAnchors()
-	if (barPosition == "top" and bumpCompass) then
-		ZO_CompassFrame:SetAnchor( TOP, GuiRoot, TOP, 0, originalCompassTop + 24 + barY)
-		ZO_TargetUnitFramereticleover:SetAnchor( TOP, GuiRoot, TOP, 0, originalTargetUnitFrameTop + 24 + barY)
-	else
-		ZO_CompassFrame:SetAnchor( TOP, GuiRoot, TOP, 0, originalCompassTop)
-		ZO_TargetUnitFramereticleover:SetAnchor( TOP, GuiRoot, TOP, 0, originalTargetUnitFrameTop)
-    end
+    ZO_TargetUnitFramereticleover:ClearAnchors()
+    if bumpCompass then
+	    if barPosition == "top" then
+		    ZO_CompassFrame:SetAnchor( TOP, GuiRoot, TOP, 0, originalCompassTop + 24 + barY)
+		    ZO_TargetUnitFramereticleover:SetAnchor( TOP, GuiRoot, TOP, 0, originalTargetUnitFrameTop + 24 + barY)
+	    else
+    		ZO_CompassFrame:SetAnchor( TOP, GuiRoot, TOP, 0, originalCompassTop)
+		    ZO_TargetUnitFramereticleover:SetAnchor( TOP, GuiRoot, TOP, 0, originalTargetUnitFrameTop)
     
-	ZO_ActionBar1:ClearAnchors()
+        end
+    end
+
+    if bumpActionBar then
+        ZO_ActionBar1:ClearAnchors()
+    end
 	
 	local RootWidth	= GuiRoot:GetWidth()
 	
 	local bottomBump = screenHeight - barY 
 	
-	if (barPosition == "bottom" and bumpActionBar) then
-		ZO_ActionBar1:SetAnchor( TOP, GuiRoot, TOP, 0, originalActionBarTop - 6 - bottomBump )
-		ZO_PlayerAttributeHealth:SetAnchor( TOP, GuiRoot, TOP, 0, originalHealthTop - 6 - bottomBump )
-		ZO_PlayerAttributeMagicka:SetAnchor( TOPRIGHT, GuiRoot, TOPRIGHT, ZO_PlayerAttributeMagicka:GetRight() - RootWidth, originalMagickaTop - 6 - bottomBump)
-		ZO_PlayerAttributeStamina:SetAnchor( TOPLEFT, GuiRoot, TOPLEFT, ZO_PlayerAttributeStamina:GetLeft(), originalStaminaTop - 6 - bottomBump)
-		ZO_PlayerAttributeMountStamina:SetAnchor(TOPLEFT, ZO_PlayerAttributeStamina, BOTTOMLEFT, 0, 0)
-		ZO_HUDInfamyMeter:SetAnchor( TOPLEFT, GuiRoot, TOPLEFT, ZO_HUDInfamyMeter:GetLeft(), originalBountyTop - 46 - bottomBump )
-	else
-		ZO_ActionBar1:SetAnchor( TOP, GuiRoot, TOP, 0, originalActionBarTop)
-		ZO_PlayerAttributeHealth:SetAnchor( TOP, GuiRoot, TOP, 0, originalHealthTop)
-		ZO_PlayerAttributeMagicka:SetAnchor( TOPRIGHT, GuiRoot, TOPRIGHT, ZO_PlayerAttributeMagicka:GetRight() - RootWidth, originalMagickaTop)
-		ZO_PlayerAttributeStamina:SetAnchor( TOPLEFT, GuiRoot, TOPLEFT, ZO_PlayerAttributeStamina:GetLeft(), originalStaminaTop)
-		ZO_PlayerAttributeMountStamina:SetAnchor(TOPLEFT, ZO_PlayerAttributeStamina, BOTTOMLEFT, 0, 0)
-		ZO_HUDInfamyMeter:SetAnchor( TOPLEFT, GuiRoot, TOPLEFT, ZO_HUDInfamyMeter:GetLeft(), originalBountyTop )
-    end    
+    if bumpActionBar then
+        if barPosition == "bottom" then
+            ZO_ActionBar1:SetAnchor( TOP, GuiRoot, TOP, 0, originalActionBarTop - 6 - bottomBump )
+            ZO_PlayerAttributeHealth:SetAnchor( TOP, GuiRoot, TOP, 0, originalHealthTop - 6 - bottomBump )
+            ZO_PlayerAttributeMagicka:SetAnchor( TOPRIGHT, GuiRoot, TOPRIGHT, ZO_PlayerAttributeMagicka:GetRight() - RootWidth, originalMagickaTop - 6 - bottomBump)
+            ZO_PlayerAttributeStamina:SetAnchor( TOPLEFT, GuiRoot, TOPLEFT, ZO_PlayerAttributeStamina:GetLeft(), originalStaminaTop - 6 - bottomBump)
+            ZO_PlayerAttributeMountStamina:SetAnchor(TOPLEFT, ZO_PlayerAttributeStamina, BOTTOMLEFT, 0, 0)
+            ZO_HUDInfamyMeter:SetAnchor( TOPLEFT, GuiRoot, TOPLEFT, ZO_HUDInfamyMeter:GetLeft(), originalBountyTop - 46 - bottomBump )
+        else
+            ZO_ActionBar1:SetAnchor( TOP, GuiRoot, TOP, 0, originalActionBarTop)
+            ZO_PlayerAttributeHealth:SetAnchor( TOP, GuiRoot, TOP, 0, originalHealthTop)
+            ZO_PlayerAttributeMagicka:SetAnchor( TOPRIGHT, GuiRoot, TOPRIGHT, ZO_PlayerAttributeMagicka:GetRight() - RootWidth, originalMagickaTop)
+            ZO_PlayerAttributeStamina:SetAnchor( TOPLEFT, GuiRoot, TOPLEFT, ZO_PlayerAttributeStamina:GetLeft(), originalStaminaTop)
+            ZO_PlayerAttributeMountStamina:SetAnchor(TOPLEFT, ZO_PlayerAttributeStamina, BOTTOMLEFT, 0, 0)
+            ZO_HUDInfamyMeter:SetAnchor( TOPLEFT, GuiRoot, TOPLEFT, ZO_HUDInfamyMeter:GetLeft(), originalBountyTop )
+        end    
+    end
 end 
 
 
@@ -1997,7 +2024,6 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipNameLevel(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = "|cffffff"..playerName.."|ccccccc\n\n"
     local toolTipRight = "\n\n"
@@ -2013,6 +2039,12 @@ function TEB.ShowToolTipNameLevel(self)
     toolTipRight = toolTipRight .."|C1970C9|t18:18:esoui/art/champion/champion_points_magicka_icon.dds|t"..string.format(unspentMage)
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end
+
 end
 
 ------------------------------------------------------
@@ -2020,9 +2052,13 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipMundus(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
        
     FormatTooltip("Mundus Stone.\n\n|cffffff"..mundus, "")
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2030,7 +2066,6 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipBag(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
        
     FormatTooltip("Bag space used / maximum size:\n|cffffff"..bagInfo, "")
     if bag_DisplayPreference == "used%" then    
@@ -2045,6 +2080,11 @@ function TEB.ShowToolTipBag(self)
     if bag_DisplayPreference == "free%" then    
         FormatTooltip("Percentage of bag space free:\n|cffffff"..bagInfo, "")
     end
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2052,9 +2092,13 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipVampirism(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
        
-    FormatTooltip("Level\nExperience to next Level\nStage\nTime until next stage", "")
+    FormatTooltip("Level\nExperience to next Level\nStage\nTime until next stage", vampTooltipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2062,7 +2106,6 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipBank(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
          
     FormatTooltip("Bank space used / maximum size.", "")
     if bank_DisplayPreference == "used%" then    
@@ -2077,6 +2120,11 @@ function TEB.ShowToolTipBank(self)
     if bank_DisplayPreference == "free%" then    
         FormatTooltip("Percentage of bank space free.", "")
     end
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2084,12 +2132,16 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipMail(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
     
     local toolTipLeft = "Unread Mail"
     local toolTipRight = unread_mail
     
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2097,12 +2149,16 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipFood(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
     
     local toolTipLeft = "Food/Drink Buff Remaining"
     local toolTipRight = food
     
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2110,13 +2166,17 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipInfamy(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
     
     local toolTipLeft = "Heat Time Left\nBounty Time Left\nInfamy\nPayoff"
 
     local toolTipRight = heatTimerText.."\n"..bountyTimerText.."\n"..infamyText.."\n".."|t18:18:TEB/Images/gold_color.dds|t"..string.format(bountyPayoff)
     
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2124,12 +2184,16 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipLatency(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
     
     local toolTipLeft = "Current network latency"
     local toolTipRight = latency.."ms"
     
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2137,7 +2201,6 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipLocation(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
     
     local toolTipLeft = ""
     if location_DisplayPreference == "(x, y) Zone Name" then
@@ -2156,6 +2219,11 @@ function TEB.ShowToolTipLocation(self)
     local toolTipRight = ""
     
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2163,7 +2231,6 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipTT(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
     
     local toolTipLeft = "Thief's Tools.\n\n"
     local toolTipRight = "\n\n"
@@ -2180,6 +2247,11 @@ function TEB.ShowToolTipTT(self)
     toolTipRight = toolTipRight .. string.format(laundersUsed).."/"..string.format(totalLaunders)
     
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2187,7 +2259,6 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipGold(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = ""
     local toolTipRight = "\n"
@@ -2246,6 +2317,11 @@ function TEB.ShowToolTipGold(self)
     toolTipRight = toolTipRight .. string.format(totalGold)
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2253,7 +2329,6 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipFPS(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = ""
 
@@ -2267,6 +2342,11 @@ function TEB.ShowToolTipFPS(self)
     toolTipRight = toolTipRight .. string.format(highestFPS)
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2274,7 +2354,6 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipCurrencies(self, currentCurrency)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
     
     local toolTipLeft = ""
     toolTipRight = "\n\n" 
@@ -2343,6 +2422,11 @@ function TEB.ShowToolTipCurrencies(self, currentCurrency)
     toolTipRight = toolTipRight .. writsColor.."|t18:18:TEB/Images/writs_color.dds|t"..string.format(writs)
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2350,7 +2434,6 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipM(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = ""
     local toolTipRight = "|CFFFFFF\n"
@@ -2392,6 +2475,11 @@ function TEB.ShowToolTipM(self)
 
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2399,9 +2487,13 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipMemory(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     FormatTooltip("Memory usage of all loaded addons.", "")
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -2409,7 +2501,6 @@ end
 ------------------------------------------------------
 function TEB.ShowToolTipXP(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local levelThing = "level"    
     if lvl == 50 then levelThing = "champion point" end
@@ -2429,22 +2520,29 @@ function TEB.ShowToolTipXP(self)
     if experience_DisplayPreference == "current XP/total needed" then
         FormatTooltip("Current experience/total experience needed:\n|cffffff"..gxpString, "")
     end
-    
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end
 end
 
 -- Clock
 ------------------------------------------------------
 function TEB.ShowToolTipClock(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     FormatTooltip("Current local time:\n|cffffff"..currentTime.."\n\n|cccccccIngame Time:\n|cffffff"..ingameTime, "")
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 -- Soul Gems
 ------------------------------------------------------
 function TEB.ShowToolTipSoulGems(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = ""
 
@@ -2472,13 +2570,17 @@ function TEB.ShowToolTipSoulGems(self)
     toolTipRight = "\n"..soulGemsToolTipRight
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 -- Sky Shards
 ------------------------------------------------------
 function TEB.ShowToolTipSkyShards(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = ""
 
@@ -2502,14 +2604,18 @@ function TEB.ShowToolTipSkyShards(self)
 
     toolTipRight = "\n\n"..string.format(skyShards).."/3\n"..string.format(availablePoints)
 
-    FormatTooltip(toolTipLeft, toolTipRight)    
+    FormatTooltip(toolTipLeft, toolTipRight)   
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end     
 end
 
 -- Durability
 ------------------------------------------------------
 function TEB.ShowToolTipDurability(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = ""
     local toolTipRight = "\n\n"
@@ -2518,13 +2624,17 @@ function TEB.ShowToolTipDurability(self)
     toolTipRight = "\n"..durabilityTooltipRight
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 -- Kill Counter
 ------------------------------------------------------
 function TEB.ShowToolTipKills(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = "Kill Counter.\n\n"
     local toolTipRight = "\n\n"
@@ -2533,25 +2643,33 @@ function TEB.ShowToolTipKills(self)
     toolTipRight = toolTipRight .. string.format(killingBlows).."\n"..string.format(kills).."\n"..string.format(deaths).."\n\n"..killRatio
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 -- Enlightenment
 ------------------------------------------------------
 function TEB.ShowToolTipEnlightenment(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = "Current enlightenment:\n|cffffff"..enlightenment
     local toolTipRight = ""
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 -- Fast Travel
 ------------------------------------------------------
 function TEB.ShowToolTipFT(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = ""
     local toolTipRight = ""
@@ -2567,13 +2685,17 @@ function TEB.ShowToolTipFT(self)
     end
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 -- Weapon Charge
 ------------------------------------------------------
 function TEB.ShowToolTipWC(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = ""
     local toolTipRight = "\n\n"
@@ -2582,13 +2704,17 @@ function TEB.ShowToolTipWC(self)
     toolTipRight = wcTooltipRight
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 -- Blacksmith Timer
 ------------------------------------------------------
 function TEB.ShowToolTipBlacksmith(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = ""
     local toolTipRight = "\n\n"
@@ -2598,13 +2724,17 @@ function TEB.ShowToolTipBlacksmith(self)
     toolTipRight = "\n"..blackSmithToolTipRight
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 -- Jewelry Timer
 ------------------------------------------------------
 function TEB.ShowToolTipJewelry(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = ""
     local toolTipRight = "\n\n"
@@ -2614,13 +2744,17 @@ function TEB.ShowToolTipJewelry(self)
     toolTipRight = "\n"..jewelryToolTipRight
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 -- Woodworking Timer
 ------------------------------------------------------
 function TEB.ShowToolTipWoodworking(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = ""
     local toolTipRight = "\n\n"
@@ -2630,13 +2764,17 @@ function TEB.ShowToolTipWoodworking(self)
     toolTipRight = "\n"..woodWorkingToolTipRight
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 -- Clothing Timer
 ------------------------------------------------------
 function TEB.ShowToolTipClothing(self)
     TEBTooltip:SetHidden(false)
-    TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
 
     local toolTipLeft = ""
     local toolTipRight = "\n\n"
@@ -2646,6 +2784,11 @@ function TEB.ShowToolTipClothing(self)
     toolTipRight = "\n"..clothingToolTipRight
 
     FormatTooltip(toolTipLeft, toolTipRight)
+    if self:GetTop() > screenHeight / 2 then
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
+    else
+        TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,12)
+    end    
 end
 
 ------------------------------------------------------
@@ -3547,6 +3690,9 @@ function TEB.durability()
     local repairCost = 0
     local leastDurability = 100
     local totalRepairCost = 0
+    local mostDamagedItem = ""
+    local mostDamagedCost = 0
+    local mostDamagedCondition = 100
 
     for slotIndex=0,16,1 do
       	if DoesItemHaveDurability(BAG_WORN,slotIndex) then
@@ -3555,7 +3701,12 @@ function TEB.durability()
             end
           	repairCost = tonumber(GetItemRepairCost(BAG_WORN, slotIndex))
           	totalRepairCost = totalRepairCost + repairCost
-          	condition = GetItemCondition(BAG_WORN, slotIndex)
+            condition = GetItemCondition(BAG_WORN, slotIndex)
+            if condition < mostDamagedCondition then
+                mostDamagedItem = equipSlotReference[slotIndex]
+                mostDamagedCost = repairCost
+                mostDamagedCondition = condition
+            end
           	
           	if leastDurability > condition then
                 leastDurability = condition
@@ -3641,8 +3792,19 @@ function TEB.durability()
     if durability_DisplayPreference == "repair cost (repair kits)" then
      durabilityInfo = durabilityColor..string.format(totalRepairCost).."g ("..string.format(totalRepairKits)..")"
     end
-    
-
+    if durability_DisplayPreference == "most damaged" then
+        durabilityInfo = durabilityColor..string.format(mostDamagedItem)
+    end    
+    if durability_DisplayPreference == "most damaged/durability %" then
+        durabilityInfo = durabilityColor..string.format(mostDamagedItem).."/"..string.format(leastDurability).."%"
+    end    
+     
+    if durability_DisplayPreference == "most damaged/durability %/repair cost" then
+        durabilityInfo = durabilityColor..string.format(mostDamagedItem).."/"..string.format(mostDamagedCondition).."%/"..string.format(mostDamagedCost).."g"
+    end    
+    if durability_DisplayPreference == "most damanaged/repair cost" then
+        durabilityInfo = durabilityColor..string.format(mostDamagedItem).."/"..string.format(mostDamagedCost).."g"
+    end            
 end
 
 ------------------------------------------------------
@@ -3951,90 +4113,87 @@ function TEB.buffs()
                 local mundusID = string.sub(string.sub(mundusBuff,-7),1,3)
                 mundus = mundusStoneReference[mundusID]
             end
-        end
-    end
-
-end
-
-------------------------------------------------------
--- Vampirism
-------------------------------------------------------
-function TEB.vampirism()
-    local isVampire, phase, buffName, vampireBuffTexture, buffInfo = LV.IsVampire()
-end
---[[
-        timeEnding = math.floor(timeEnding) * 1000
-        timeStarted = math.floor(timeStarted)
-        vampireStage = string.match(buffName,"%d+")
-        local buffTimeLeft = math.floor((timeEnding - GetFrameTimeMilliseconds()) / 1000)
-        vampireTimeLeft = TEB.ConvertSeconds(vampirism_TimerPreference, buffTimeLeft)
-        local skillIndex = 0
-        local SkillLinesCount = GetNumSkillLines(SKILL_TYPE_WORLD)
-        local nextRankXP
-        local currentXP
-        local lineName
-        local lineLevel = 0
-        local skillLineId
-        local vampireSkillsID = 51
-        for i=1, SkillLinesCount, 1 do
-            skillLineId = GetSkillLineId(SKILL_TYPE_WORLD, i)
-            if skillLineId == vampireSkillsID then
-                skillIndex = i
-                break
-            end
-        end
-        if skillIndex > 0 then
-            local rank,advised,active,discovered = GetSkillLineDynamicInfo(SKILL_TYPE_WORLD, skillIndex)
-            if discovered == true and active == true then
-                _, nextRankXP, currentXP = GetSkillLineXPInfo(SKILL_TYPE_WORLD, skillIndex)
-            end
-            if GetSkillLineInfo then
-                _, lineLevel = GetSkillLineInfo(SKILL_TYPE_WORLD, skillIndex)
-            else
-                local skillLineData = SKILLS_DATA_MANAGER:GetSkillLineDataByIndices(SKILL_TYPE_WORLD, skillIndex)
-                if skillLineData then
-                    _, lineLevel = skillLineData:GetName(), skillLineData:GetCurrentRank()
+            if textureName and textureName ~= "" and PlainStringFind(textureName,"_vampire_infection_") then
+                if not isVampire then
+                    isVampire = true
+                    TEB:RebuildBar() 
+                end 
+                timeEnding = math.floor(timeEnding) * 1000
+                timeStarted = math.floor(timeStarted)
+                vampireStage = string.match(buffName,"%d+")
+                local buffTimeLeft = math.floor((timeEnding - GetFrameTimeMilliseconds()) / 1000)
+                vampireTimeLeft = TEB.ConvertSeconds(vampirism_TimerPreference, buffTimeLeft)
+                local skillIndex = 0
+                local SkillLinesCount = GetNumSkillLines(SKILL_TYPE_WORLD)
+                local nextRankXP
+                local currentXP
+                local lineName
+                local lineLevel = 0
+                local skillLineId
+                local vampireSkillsID = 51
+                for i=1, SkillLinesCount, 1 do
+                    skillLineId = GetSkillLineId(SKILL_TYPE_WORLD, i)
+                    if skillLineId == vampireSkillsID then
+                        skillIndex = i
+                        break
+                    end
                 end
-            end                    
+                if skillIndex > 0 then
+                    local rank,advised,active,discovered = GetSkillLineDynamicInfo(SKILL_TYPE_WORLD, skillIndex)
+                    if discovered == true and active == true then
+                        _, nextRankXP, currentXP = GetSkillLineXPInfo(SKILL_TYPE_WORLD, skillIndex)
+                    end
+                    if GetSkillLineInfo then
+                        _, lineLevel = GetSkillLineInfo(SKILL_TYPE_WORLD, skillIndex)
+                    else
+                        local skillLineData = SKILLS_DATA_MANAGER:GetSkillLineDataByIndices(SKILL_TYPE_WORLD, skillIndex)
+                        if skillLineData then
+                            _, lineLevel = skillLineData:GetName(), skillLineData:GetCurrentRank()
+                        end
+                    end                    
+                end
+                vampireLevel = lineLevel
+                vampireLevelPercent = round((currentXP / nextRankXP)*100, 1)
+                vampireLevelPercentLeft = round(100 - vampireLevelPercent, 1)
+                if vampireStage == "1" then vampireTimeLeft = "--" end
+                local textColor = "|ccccccc"
+                iconColor = "normal"
+                local stage = tonumber(vampireStage)
+                if vampirism_StageColor[stage] == "green" then 
+                    textColor = "|c00ff00"
+                    iconColor = "good"
+                end
+                if vampirism_StageColor[stage] == "yellow" then
+                    textColor = "|cffff00"
+                    iconColor = "caution"
+                end
+                if vampirism_StageColor[stage] == "orange" then
+                    textColor = "|cff8000"
+                    iconColor = "warning"
+                end
+                if vampirism_StageColor[stage] == "red" then
+                    textColor = "|cff0000"
+                    iconColor = "danger"
+                end
+                if vampirism_DisplayPreference == "Level (XP%)/Stage (Timer)" then
+                    vampireText = textColor..string.format(vampireLevel).." ("..string.format(vampireLevelPercent).."%)".."/"..vampireStage.." ("..vampireTimeLeft..")"
+                end
+                if vampirism_DisplayPreference == "Level (XP%)" then
+                    vampireText = textColor..string.format(vampireLevel).." ("..string.format(vampireLevelPercent).."%)"
+                end
+                if vampirism_DisplayPreference == "Stage (Timer)" then
+                    vampireText = textColor..vampireStage.." ("..vampireTimeLeft..")"
+                end
+                if vampirism_DisplayPreference == "Timer" then
+                    vampireText = textColor..vampireTimeLeft
+                end
+                TEB.SetIcon("Vampirism", iconColor)    
+                vampTooltipRight = string.format(vampireLevel).."\n"..string.format(vampireLevelPercent).."\n"..textColor..vampireStage.."\n|ccccccc"..vampireTimeLeft
+           end
         end
-        vampireLevel = lineLevel
-        vampireLevelPercent = round((currentXP / nextRankXP)*100, 1)
-        vampireLevelPercentLeft = round(100 - vampireLevelPercent, 1)
-        if vampireStage == "4" then vampireTimeLeft = "--" end
-        local textColor = "|ccccccc"
-        iconColor = "normal"
-        local stage = tonumber(vampireStage)
-        if vampirism_StageColor[stage] == "green" then 
-            textColor = "|c00ff00"
-            iconColor = "good"
-        end
-        if vampirism_StageColor[stage] == "yellow" then
-            textColor = "|cffff00"
-            iconColor = "caution"
-        end
-        if vampirism_StageColor[stage] == "orange" then
-            textColor = "|cff8000"
-            iconColor = "warning"
-        end
-        if vampirism_StageColor[stage] == "red" then
-            textColor = "|cff0000"
-            iconColor = "danger"
-        end
-        if vampirism_DisplayPreference == "Level (XP%)/Stage (Timer)" then
-            vampireText = textColor..string.format(vampireLevel).." ("..string.format(vampireLevelPercent).."%)".."/Stage "..vampireStage.." ("..vampireTimeLeft..")"
-        end
-        if vampirism_DisplayPreference == "Level (XP%)" then
-            vampireText = textColor..string.format(vampireLevel).." ("..string.format(vampireLevelPercent).."%)"
-        end
-        if vampirism_DisplayPreference == "Stage (Timer)" then
-            vampireText = textColor.."Stage "..vampireStage.." ("..vampireTimeLeft..")"
-        end
-        if vampirism_DisplayPreference == "Timer" then
-            vampireText = textColor..vampireTimeLeft
-        end
-        TEB.SetIcon("Vampirism", iconColor)          
     end
-]]--
+
+end
 
 ------------------------------------------------------
 -- Bounty/Heat Timer
@@ -4419,7 +4578,6 @@ function TEB.OnUpdate()
         TEB.mail()
         TEB.buffs()
         TEB.bounty()
-        TEB.vampirism()
 
         
         if addonInitialized then
@@ -4869,31 +5027,55 @@ function TEB.CreateSettingsWindow()
                     icons_Mode = newValue
                     TEB:RebuildBar()
                 end,
-              },           
+              }, 
+              {
+                type = "slider",
+                name = "Draw Layer (0=background, 4=foreground)",
+                tooltip = "Choose which layer on which you'd like the bar drawn. Background is underneath everything, foreground is on top of everything.",
+                min = 0,
+                max = 4,
+                step = 1,
+                default = 0,
+                getFunc = function() return TEB.savedVariables.barLayer end,
+                setFunc = function(newValue) 
+                    TEB.savedVariables.barLayer = newValue
+                    barLayer = newValue    
+                    TEB.SetBarLayer()                
+                end,
+            },                        
               {
                       type = "checkbox",
-                      name = "Bump the compass down when bar is at top",
+                      name = "Bump compass down when bar at top",
                       tooltip = "Bump the compass down if the bar position is set to top. Disable this if other addons will be moving the compass.",
                       default = true,
                       getFunc = function() return TEB.savedVariables.bumpCompass end,
                       setFunc = function(newValue) 
                         TEB.savedVariables.bumpCompass = newValue
                         bumpCompass = newValue
-                        TEB:SetBarPosition()
-                        TEB:UpdateControlsPosition()
+                        ReloadUI("ingame")
+                        if not bumpCompass then
+                            ReloadUI("ingame")
+                        else
+                            TEB:SetBarPosition()
+                            TEB:UpdateControlsPosition()
+                        end
                       end,
               },
               {
                       type = "checkbox",
-                      name = "Bump the action bar up when bar is at bottom",
-                      tooltip = "Bump the action bar, magicka, health, and stamia bars up if the bar position is set to bottom. Disable this if other addons will be moving the action bar or health/stamina/magicka bars.",
+                      name = "Bump action/resource bars up when bar at bottom",
+                      tooltip = "Bump the action bar, magicka, health, and stamina bars up if the bar position is set to bottom. Disable this if other addons will be moving the action bar or health/stamina/magicka bars.",
                       default = true,
                       getFunc = function() return TEB.savedVariables.bumpActionBar end,
                       setFunc = function(newValue) 
                         TEB.savedVariables.bumpActionBar = newValue
                         bumpActionBar = newValue
-                        TEB:SetBarPosition()
-                        TEB:UpdateControlsPosition()
+                        if not bumpActionBar then
+                            ReloadUI("ingame")
+                        else
+                            TEB:SetBarPosition()
+                            TEB:UpdateControlsPosition()
+                        end
                       end,
               },
               {
@@ -5779,7 +5961,7 @@ function TEB.CreateSettingsWindow()
                 name = "Display format",
                 tooltip = "Choose how to display durability.",
                 default = "durability %",
-                choices = {"durability %", "durability %/repair cost", "repair cost", "durability % (repair kits)", "durability %/repair cost (repair kits)", "repair cost (repair kits)"},
+                choices = {"durability %", "durability %/repair cost", "repair cost", "durability % (repair kits)", "durability %/repair cost (repair kits)", "repair cost (repair kits)", "most damaged", "most damaged/durability %", "most damaged/durability %/repair cost", "most damanaged/repair cost"},
                 getFunc = function() return TEB.savedVariables.durability_DisplayPreference end,
                 setFunc = function(newValue)
                     TEB.savedVariables.durability_DisplayPreference = newValue

@@ -4,7 +4,7 @@
 ## Version: 10.0.0
 ## APIVersion: 100030 100031
 ## SavedVariables: TEBSavedVariables
-## DependsOn: LibAddonMenu-2.0>=28 LibFoodDrinkBuff>=14 LibVampire
+## DependsOn: LibAddonMenu-2.0>=28 LibFoodDrinkBuff>=14
 
 TEB.lua
 TEB.xml
