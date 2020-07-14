@@ -32,30 +32,32 @@ The Elder Bar is an addon for Elder Scrolls Online. This addon adds an informati
 2. Bag Space
 3. Bank Space
 4. Blacksmithing Research Timer
-5. Clock
-6. Clothing Research Timer
-7. Durability
-8. Enlightenment
-9. Event Tickets
-10. Experience
-11. Fast Travel Timer
-12. Food Buff Timer
-13. Frames Per Second
-14. Gold
-15. Kill Counter
-16. Latency
-17. Level / Champion Points
-18. Location (Zone Name / Coordinates)
-19. Jewlery Crafting Research Timer
-20. Memory
-21. Mount Timer
-22. Mundus Stone
-23. Sky Shards
-24. Soul Gems
-25. Tel Var Stones
-26. Thief's Tools
-27. Transmute Crystals
-28. Unread Mail
-29. Weapon Charge
-30. Woodworking Research Timer
-31. Writ Voucers
+5. Bounty/Heat Timer
+6. Clock
+7. Clothing Research Timer
+8. Durability
+9. Enlightenment
+10. Event Tickets
+11. Experience
+12. Fast Travel Timer
+13. Food Buff Timer
+14. Frames Per Second
+15. Gold
+16. Kill Counter
+17. Latency
+18. Level / Champion Points
+19. Location (Zone Name / Coordinates)
+20. Jewlery Crafting Research Timer
+21. Memory
+22. Mount Timer
+23. Mundus Stone
+24. Sky Shards
+25. Soul Gems
+26. Tel Var Stones
+27. Thief's Tools
+28. Transmute Crystals
+29. Unread Mail
+30. Vampirism
+31. Weapon Charge
+32. Woodworking Research Timer
+33. Writ Voucers

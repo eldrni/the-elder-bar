@@ -2033,10 +2033,11 @@ function TEB.ShowToolTipNameLevel(self)
     toolTipRight = toolTipRight .. string.format(lvl).."\n"
     toolTipRight = toolTipRight .. string.format(cp).."\n\n"
 
-    toolTipLeft = toolTipLeft .. "Unspent Warrior Points\nUnspent Thief Points\nUnspent Mage Points"
+    toolTipLeft = toolTipLeft .. "Unspent Warrior Points\nUnspent Thief Points\nUnspent Mage Points\nTotal Unspent Points"
     toolTipRight = toolTipRight .. "|CD6660C|t18:18:esoui/art/champion/champion_points_health_icon.dds|t"..string.format(unspentWarrior).."\n"
     toolTipRight = toolTipRight .."|C51AB0D|t18:18:esoui/art/champion/champion_points_stamina_icon.dds|t"..string.format(unspentThief).."\n"
-    toolTipRight = toolTipRight .."|C1970C9|t18:18:esoui/art/champion/champion_points_magicka_icon.dds|t"..string.format(unspentMage)
+    toolTipRight = toolTipRight .."|C1970C9|t18:18:esoui/art/champion/champion_points_magicka_icon.dds|t"..string.format(unspentMage).."\n"
+    toolTipRight = toolTipRight .."|CFFFFAA|t18:18:TEB/Images/cp_color.dds|t"..string.format(unspentTotal).."|r"
 
     FormatTooltip(toolTipLeft, toolTipRight)
     if self:GetTop() > screenHeight / 2 then
@@ -3092,15 +3093,16 @@ function TEB.balance()
     end
     
     lvl = GetUnitLevel("player")
-    cp = GetUnitChampionPoints("player")
+    cp = GetPlayerChampionPointsEarned()
     
     lvlText = ""
 
 	unspentWarrior = GetNumUnspentChampionPoints( 1 )
 	unspentMage = GetNumUnspentChampionPoints( 2 )
-	unspentThief = GetNumUnspentChampionPoints( 3 )
+    unspentThief = GetNumUnspentChampionPoints( 3 )
+    unspentTotal = unspentWarrior + unspentMage + unspentThief
 	local hasUnspentPoints = false
-	if unspentWarrior > 0 or unspentMage > 0 or unspentThief > 0 then
+	if unspentTotal > 0 then
     	hasUnspentPoints = true
     end
     
@@ -4585,6 +4587,9 @@ function TEB.OnUpdate()
             TEB.AddToGoldDatabase(playerName)
         end
 
+       --gold = "737,011"
+        --lvlText="734"
+        --skyShardsInfo="1/11"
         if gadgetText["Gold"] then
             TEBTopGold:SetText(gold)
         else
