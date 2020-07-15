@@ -1,7 +1,7 @@
 ## Title: The Elder Bar
 ## Description: The Elder Bar adds a configurable information bar anywhere on the screen.
 ## Author: Eldrni
-## Version: 10.0.0
+## Version: 10.0.2
 ## APIVersion: 100030 100031
 ## SavedVariables: TEBSavedVariables
 ## DependsOn: LibAddonMenu-2.0>=28 LibFoodDrinkBuff>=14
