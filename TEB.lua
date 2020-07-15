@@ -1,7 +1,7 @@
 TEB = {} 
 TEB.name = "TEB"
 TEB.settingsRev = 6
-TEB.version = "10.0.0"
+TEB.version = "10.0.2"
 
 local LAM2 = LibAddonMenu2
 local LFDB = LIB_FOOD_DRINK_BUFF
@@ -2094,7 +2094,7 @@ end
 function TEB.ShowToolTipVampirism(self)
     TEBTooltip:SetHidden(false)
        
-    FormatTooltip("Level\nExperience to next Level\nStage\nTime until next stage", vampTooltipRight)
+    FormatTooltip("Stage\nTime until stage expires", vampTooltipRight)
     if self:GetTop() > screenHeight / 2 then
         TEBTooltip:SetAnchor(TOPLEFT, self, BOTTOMRIGHT, -12,-12 - TEBTop:GetHeight() - TEBTooltip:GetHeight())
     else
@@ -4155,8 +4155,8 @@ function TEB.buffs()
                     end                    
                 end
                 vampireLevel = lineLevel
-                vampireLevelPercent = round((currentXP / nextRankXP)*100, 1)
-                vampireLevelPercentLeft = round(100 - vampireLevelPercent, 1)
+                --vampireLevelPercent = round((currentXP / nextRankXP)*100, 1)
+                --vampireLevelPercentLeft = round(100 - vampireLevelPercent, 1)
                 if vampireStage == "1" then vampireTimeLeft = "--" end
                 local textColor = "|ccccccc"
                 iconColor = "normal"
@@ -4177,20 +4177,12 @@ function TEB.buffs()
                     textColor = "|cff0000"
                     iconColor = "danger"
                 end
-                if vampirism_DisplayPreference == "Level (XP%)/Stage (Timer)" then
-                    vampireText = textColor..string.format(vampireLevel).." ("..string.format(vampireLevelPercent).."%)".."/"..vampireStage.." ("..vampireTimeLeft..")"
-                end
-                if vampirism_DisplayPreference == "Level (XP%)" then
-                    vampireText = textColor..string.format(vampireLevel).." ("..string.format(vampireLevelPercent).."%)"
-                end
+                vampireText = textColor..vampireTimeLeft
                 if vampirism_DisplayPreference == "Stage (Timer)" then
                     vampireText = textColor..vampireStage.." ("..vampireTimeLeft..")"
                 end
-                if vampirism_DisplayPreference == "Timer" then
-                    vampireText = textColor..vampireTimeLeft
-                end
                 TEB.SetIcon("Vampirism", iconColor)    
-                vampTooltipRight = string.format(vampireLevel).."\n"..string.format(vampireLevelPercent).."\n"..textColor..vampireStage.."\n|ccccccc"..vampireTimeLeft
+                vampTooltipRight = textColor..vampireStage.."\n|ccccccc"..vampireTimeLeft
            end
         end
     end
@@ -7050,8 +7042,8 @@ function TEB.CreateSettingsWindow()
                 type = "dropdown",
                 name = "Display format",
                 tooltip = "Choose how to display the vampirism gadget information.",
-                default = "Level (XP%)/Stage (Timer)",
-                choices = {"Level (XP%)/Stage (Timer)", "Level (XP%)", "Stage (Timer)", "Timer"},
+                default = "Stage (Timer)",
+                choices = {"Stage (Timer)", "Timer"},
                 getFunc = function() return TEB.savedVariables.vampirism_DisplayPreference end,
                 setFunc = function(newValue)
                     TEB.savedVariables.vampirism_DisplayPreference = newValue
