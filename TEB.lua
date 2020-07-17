@@ -1,7 +1,7 @@
 TEB = {} 
 TEB.name = "TEB"
 TEB.settingsRev = 6
-TEB.version = "10.0.2"
+TEB.version = "10.0.3"
 
 local LAM2 = LibAddonMenu2
 local LFDB = LIB_FOOD_DRINK_BUFF
@@ -5045,6 +5045,7 @@ function TEB.CreateSettingsWindow()
                       name = "Bump compass down when bar at top",
                       tooltip = "Bump the compass down if the bar position is set to top. Disable this if other addons will be moving the compass.",
                       default = true,
+                      warning = "Disabling this will cause UI reload.",
                       getFunc = function() return TEB.savedVariables.bumpCompass end,
                       setFunc = function(newValue) 
                         TEB.savedVariables.bumpCompass = newValue
@@ -5063,6 +5064,7 @@ function TEB.CreateSettingsWindow()
                       name = "Bump action/resource bars up when bar at bottom",
                       tooltip = "Bump the action bar, magicka, health, and stamina bars up if the bar position is set to bottom. Disable this if other addons will be moving the action bar or health/stamina/magicka bars.",
                       default = true,
+                      warning = "Disabling this will cause UI reload.",
                       getFunc = function() return TEB.savedVariables.bumpActionBar end,
                       setFunc = function(newValue) 
                         TEB.savedVariables.bumpActionBar = newValue
