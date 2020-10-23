@@ -3647,7 +3647,7 @@ end
 
 function getWCColor(wcPerc, hasPoison, poisonCount)
     local wcColor = "|ccccccc"
-    local poisonColor = "|cccccc"
+    local poisonColor = "|ccccccc"
     local iconColor = "normal"
     if hasPoison and wc_AutoPoison then
         if poisonCount <= wc_PoisonWarning then
