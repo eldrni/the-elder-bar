@@ -3902,11 +3902,12 @@ function TEB.researchtimer(researchIcon, craftId)
     local toolTipLeft = ""
     local toolTipRight = ""
     local timerRunning = false
-    local freeSlots = 0
     local timers, totalSlots, traits = TEB.CalculateCraftingTimers(craftId)
+    local freeSlots = totalSlots
     if #timers > 0 then
         timerRunning = true        
         for timerIndex=1,#timers do
+            freeSlots = freeSlots - 1
             if timers[timerIndex] < leastTime then
                 leastTime = timers[timerIndex]
             end
@@ -3919,7 +3920,6 @@ function TEB.researchtimer(researchIcon, craftId)
         	toolTipRight = toolTipRight .."\n".. timerString
         end
         for timerIndex=#timers+1,totalSlots do
-            freeSlots = freeSlots + 1
             toolTipLeft = toolTipLeft .. "\n" .. "Slot "..string.format(timerIndex)
             toolTipRight = toolTipRight .."\n"..research_FreeText            
         end
