@@ -4930,7 +4930,7 @@ function TEB.fixname(itemName)
     if string.sub(itemName, -2) == "^n" then itemName = itemName:sub(1, -3) end
     if string.sub(itemName, -2) == "^f" then itemName = itemName:sub(1, -3) end
     if string.sub(itemName, -2) == "^m" then itemName = itemName:sub(1, -3) end
-    itemName = itemName:gsub("([a-zA-Z])(%w*)", function(a,b) return string.upper(a)..b end)
+    --itemName = itemName:gsub("([a-zA-Z])(%w*)", function(a,b) return string.upper(a)..b end)
     return itemName
 end
 
